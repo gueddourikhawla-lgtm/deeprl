@@ -46,5 +46,3 @@ Ouvrez le fichier `khulla.html` dans un navigateur moderne (Chrome, Firefox, Edg
 2. Ouvrez `khulla.html` dans votre navigateur
 3. Naviguez avec les flèches ← → ou cliquez sur les boutons
 4. Testez vos connaissances avec les quizzes interactifs
-
-## 📁 Structure du Projet
