@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Reinforcement Learning — Page Interactive</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        :root {
+            --burgundy: #800021; --burgundy-light: #AB274E; --burgundy-dark: #630922;
+            --blue: #3B82F6; --blue-light: #60A5FA; --blue-dark: #1E3A8A;
+            --violet: #7C3AED; --violet-light: #A78BFA; --violet-dark: #5B21B6;
+            --cream: #FDF8F3; --dark: #1F2937; --gray: #6B7280;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--burgundy-dark) 0%, var(--blue-dark) 30%, var(--violet-dark) 100%);
+            color: var(--dark); line-height: 1.7;
+            padding-bottom: 80px;
+        }
+
+        .container { max-width: 1300px; margin: 0 auto; padding: 30px 20px; }
+        
+        /* Header */
+        .header {
+            text-align: center; color: white; padding: 60px 30px;
+            background: rgba(255, 255, 255, 0.12); border-radius: 28px; margin: 20px 0 50px;
+            backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.25);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+        }
+        .header h1 {
+            font-family: 'Playfair Display', serif; font-size: 3.8em; margin-bottom: 18px;
+            background: linear-gradient(135deg, #fff 0%, var(--violet-light) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header .subtitle { font-size: 1.4em; opacity: 0.98; margin-bottom: 25px; font-weight: 300; }
+        .header .badges { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .badge {
+            background: rgba(255,255,255,0.22); padding: 9px 20px; border-radius: 28px;
+            font-weight: 600; font-size: 0.92em; backdrop-filter: blur(6px);
+            transition: all 0.25s ease;
+        }
+        .badge:hover { transform: scale(1.05); background: rgba(255,255,255,0.35); }
+
+        /* Content Blocks */
+        .block {
+            background: white; border-radius: 24px; padding: 45px; margin-bottom: 35px;
+            box-shadow: 0 20px 70px rgba(0,0,0,0.32); position: relative;
+            border: 1px solid rgba(124, 58, 237, 0.12);
+        }
+        .block::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+            background: linear-gradient(90deg, var(--burgundy), var(--violet), var(--blue));
+            border-radius: 24px 24px 0 0;
+        }
+        .block-title {
+            font-family: 'Playfair Display', serif; font-size: 2.3em; color: var(--burgundy);
+            margin-bottom: 28px; text-align: center; position: relative; padding-bottom: 16px;
+        }
+        .block-title::after {
+            content: ''; display: block; width: 85px; height: 4px;
+            background: linear-gradient(90deg, var(--burgundy), var(--violet), var(--blue));
+            margin: 14px auto 0; border-radius: 2px;
+        }
+
+        /* Five Elements */
+        .five-elements {
+            display: flex; justify-content: center; align-items: center; flex-wrap: wrap;
+            gap: 22px; margin: 38px 0;
+        }
+        .element-box {
+            background: linear-gradient(135deg, rgba(128, 0, 33, 0.09) 0%, rgba(124, 58, 237, 0.09) 100%);
+            border: 3px solid; border-radius: 20px; padding: 26px; text-align: center;
+            min-width: 185px; transition: all 0.32s ease; cursor: pointer;
+        }
+        .element-box:hover { transform: translateY(-10px) scale(1.025); box-shadow: 0 16px 42px rgba(0,0,0,0.19); }
+        .element-box.agent { border-color: var(--burgundy); }
+        .element-box.environment { border-color: var(--blue); }
+        .element-box.state { border-color: var(--violet); }
+        .element-box.action { border-color: var(--burgundy-light); }
+        .element-box.reward { border-color: var(--blue-light); }
+        .element-icon { font-size: 4em; margin-bottom: 10px; }
+        .element-title { font-weight: 700; font-size: 1.32em; margin-bottom: 9px; color: var(--burgundy); }
+        .element-desc { font-size: 0.93em; color: var(--gray); line-height: 1.5; }
+
+        .connection-arrows {
+            display: flex; justify-content: center; align-items: center; margin: 32px 0;
+            font-size: 2.2em; color: var(--violet); animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 0.68; transform: scale(1); } 50% { opacity: 1; transform: scale(1.07); } }
+
+        /* MDP */
+        .mdp-container {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.09) 0%, rgba(124, 58, 237, 0.09) 100%);
+            border-radius: 17px; padding: 32px; margin: 32px 0;
+        }
+        .mdp-formula {
+            text-align: center; font-size: 1.65em; font-weight: 700; color: var(--burgundy);
+            margin: 16px 0; padding: 17px; background: white; border-radius: 11px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.09); font-family: 'Courier New', monospace;
+        }
+        .mdp-components {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+            gap: 16px; margin-top: 23px;
+        }
+        .mdp-item {
+            background: white; padding: 19px; border-radius: 11px;
+            border-left: 5px solid var(--violet); transition: all 0.28s ease;
+        }
+        .mdp-item:hover { transform: translateX(7px); box-shadow: 0 5px 18px rgba(0,0,0,0.11); }
+        .mdp-item h4 { color: var(--burgundy); margin-bottom: 7px; font-size: 1.22em; }
+
+        /* Grids & Cards */
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(295px, 1fr)); gap: 24px; margin-top: 28px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(275px, 1fr)); gap: 20px; margin-top: 28px; }
+        
+        .card {
+            background: white; border-left: 5px solid var(--violet); border-radius: 13px;
+            padding: 24px; box-shadow: 0 5px 17px rgba(0,0,0,0.095); transition: all 0.28s ease;
+        }
+        .card:hover { transform: translateX(7px); box-shadow: 0 8px 26px rgba(0,0,0,0.15); border-left-color: var(--burgundy); }
+        .card h3 { color: var(--burgundy); margin-bottom: 11px; display: flex; align-items: center; gap: 9px; font-size: 1.32em; }
+        .card p { color: var(--gray); line-height: 1.68; }
+
+        .formula {
+            background: var(--cream); border: 2px solid var(--violet-light); border-radius: 9px;
+            padding: 13px 17px; margin: 17px 0; font-family: 'Courier New', monospace;
+            text-align: center; color: var(--burgundy); font-weight: 600; font-size: 1.03em;
+        }
+
+        /* Algorithm Cards */
+        .algorithm-card {
+            background: linear-gradient(135deg, rgba(128, 0, 33, 0.06) 0%, rgba(124, 58, 237, 0.06) 100%);
+            border-radius: 17px; padding: 26px; border: 3px solid transparent;
+            transition: all 0.33s ease; cursor: pointer; margin-bottom: 18px;
+        }
+        .algorithm-card:hover { border-color: var(--violet); transform: translateY(-5px); box-shadow: 0 11px 33px rgba(124, 58, 237, 0.21); }
+        .algorithm-card.value-based { border-left-color: var(--burgundy); }
+        .algorithm-card.policy-based { border-left-color: var(--violet); }
+        .algorithm-card.actor-critic { border-left-color: var(--blue); }
+
+        .algo-header { display: flex; align-items: center; gap: 13px; margin-bottom: 17px; }
+        .algo-icon { font-size: 2.7em; }
+        .algo-title { font-family: 'Playfair Display', serif; font-size: 1.65em; color: var(--burgundy); }
+        
+        .algo-badge {
+            display: inline-block; padding: 5px 13px; border-radius: 21px;
+            font-size: 0.81em; font-weight: 600; margin: 4px 4px 4px 0;
+        }
+        .badge-disc { background: #FEE2E2; color: #DC2626; }
+        .badge-cont { background: #DBEAFE; color: #2563EB; }
+        .badge-on { background: #F3E8FF; color: #7C3AED; }
+        .badge-off { background: #D1FAE5; color: #059669; }
+        .badge-gold { background: linear-gradient(135deg, #FCD34D, #F59E0B); color: #78350F; }
+
+        .algo-features { list-style: none; margin-top: 13px; }
+        .algo-features li { padding: 6px 0; padding-left: 27px; position: relative; font-size: 0.94em; }
+        .algo-features li::before {
+            content: '✓'; position: absolute; left: 0; color: #10B981; font-weight: bold; font-size: 1.08em;
+        }
+
+        /* Quiz Styles */
+        .quiz-wrapper {
+            margin: 30px 0; background: var(--cream); border-radius: 17px;
+            padding: 21px; border: 2px dashed var(--violet-light); position: relative;
+        }
+        .quiz-toggle {
+            background: linear-gradient(135deg, var(--burgundy), var(--violet));
+            color: white; border: none; padding: 12px 25px; border-radius: 31px;
+            cursor: pointer; font-weight: 600; font-size: 1em; transition: all 0.28s ease;
+            display: flex; align-items: center; gap: 8px; margin: 0 auto;
+            box-shadow: 0 4px 14px rgba(128, 0, 33, 0.29);
+        }
+        .quiz-toggle:hover { transform: scale(1.035); box-shadow: 0 6px 19px rgba(128, 0, 33, 0.38); }
+        
+        .quiz-panel {
+            margin-top: 20px; opacity: 0; max-height: 0; overflow: hidden;
+            transition: all 0.48s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .quiz-panel.open { opacity: 1; max-height: 630px; }
+        
+        .quiz-question { font-weight: 700; color: var(--burgundy); margin-bottom: 15px; font-size: 1.13em; text-align: center; }
+        .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        
+        .quiz-opt {
+            background: white; border: 2px solid #e5e7eb; padding: 14px; border-radius: 11px;
+            cursor: pointer; text-align: center; transition: all 0.24s; font-weight: 500;
+        }
+        .quiz-opt:hover { border-color: var(--violet); background: rgba(124, 58, 237, 0.07); }
+        .quiz-opt.correct { background: #D1FAE5; border-color: #10B981; color: #065F46; pointer-events: none; }
+        .quiz-opt.incorrect { background: #FEE2E2; border-color: #EF4444; color: #991B1B; pointer-events: none; }
+        .quiz-opt.locked { pointer-events: none; opacity: 0.64; }
+
+        .quiz-feedback {
+            margin-top: 15px; padding: 15px; border-radius: 11px; background: white;
+            display: none; justify-content: space-between; align-items: center;
+            box-shadow: 0 5px 14px rgba(0,0,0,0.11); animation: slideUp 0.33s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(11px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .quiz-msg { font-weight: 700; font-size: 1.1em; }
+        .quiz-pts {
+            background: linear-gradient(135deg, var(--blue), var(--violet));
+            color: white; padding: 6px 15px; border-radius: 21px; font-weight: 700;
+        }
+        .quiz-reset {
+            background: transparent; border: 2px solid var(--burgundy); color: var(--burgundy);
+            padding: 7px 17px; border-radius: 21px; cursor: pointer; font-weight: 600; margin-left: 13px;
+        }
+        .quiz-reset:hover { background: var(--burgundy); color: white; }
+
+        /* Video Section */
+        .video-container {
+            background: linear-gradient(135deg, rgba(128, 0, 33, 0.07) 0%, rgba(124, 58, 237, 0.07) 100%);
+            border-radius: 21px; padding: 30px; margin: 30px 0;
+            border: 2px solid var(--violet-light);
+        }
+        .video-wrapper {
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+            border-radius: 17px; box-shadow: 0 11px 43px rgba(0, 0, 0, 0.34);
+            margin-bottom: 24px;
+        }
+        .video-wrapper iframe {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 17px; transition: transform 0.33s ease;
+        }
+        .video-wrapper:hover iframe { transform: scale(1.013); }
+        
+        .video-info {
+            background: white; padding: 24px; border-radius: 17px;
+            box-shadow: 0 6px 21px rgba(0, 0, 0, 0.115);
+        }
+        .video-info h3 {
+            color: var(--burgundy); font-family: 'Playfair Display', serif;
+            font-size: 1.52em; margin-bottom: 15px;
+        }
+        .video-info p { margin: 8px 0; color: var(--gray); font-size: 0.96em; }
+        
+        .video-badge {
+            display: inline-block; background: linear-gradient(135deg, var(--burgundy), var(--violet));
+            color: white; padding: 6px 17px; border-radius: 21px; font-weight: 600;
+            font-size: 0.91em; margin-bottom: 15px; animation: pulse 2.1s infinite;
+        }
+
+        .video-stats {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(142px, 1fr));
+            gap: 17px; margin-top: 26px;
+        }
+        .stat-box {
+            background: white; padding: 19px; border-radius: 13px; text-align: center;
+            border-left: 4px solid var(--blue); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.095);
+            transition: all 0.28s ease;
+        }
+        .stat-box:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); border-left-color: var(--burgundy); }
+        .stat-value { display: block; font-size: 1.82em; font-weight: 700; color: var(--burgundy); margin-bottom: 4px; }
+        .stat-label { font-size: 0.86em; color: var(--gray); }
+
+        /* Comparison Table */
+        .comparison-table {
+            width: 100%; border-collapse: collapse; margin: 36px 0;
+            box-shadow: 0 6px 21px rgba(0,0,0,0.115); border-radius: 13px; overflow: hidden;
+        }
+        .comparison-table th {
+            background: linear-gradient(135deg, var(--burgundy) 0%, var(--violet) 100%);
+            color: white; padding: 18px 15px; text-align: left; font-weight: 600; font-size: 1.07em;
+        }
+        .comparison-table td { padding: 15px 17px; border-bottom: 1px solid #e5e7eb; background: white; }
+        .comparison-table tr:nth-child(even) td { background: var(--cream); }
+        .comparison-table tr:hover td {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.11) 0%, rgba(128, 0, 33, 0.11) 100%);
+        }
+
+        /* Timeline */
+        .timeline {
+            display: flex; justify-content: space-between; align-items: center;
+            margin: 52px 0; padding: 40px;
+            background: linear-gradient(135deg, rgba(128, 0, 33, 0.07) 0%, rgba(59, 130, 246, 0.07) 100%);
+            border-radius: 21px; position: relative; flex-wrap: wrap; gap: 20px;
+        }
+        .timeline::before {
+            content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, var(--burgundy), var(--violet), var(--blue));
+            z-index: 0; border-radius: 2px;
+        }
+        .timeline-node {
+            background: white; padding: 24px; border-radius: 17px;
+            box-shadow: 0 6px 21px rgba(0,0,0,0.155); text-align: center; z-index: 1;
+            min-width: 172px; transition: all 0.33s ease;
+        }
+        .timeline-node:hover { transform: translateY(-11px); box-shadow: 0 11px 33px rgba(0,0,0,0.21); }
+        .timeline-year { font-weight: 700; color: var(--burgundy); font-size: 1.1em; margin-bottom: 7px; }
+        .timeline-algo { font-weight: 600; color: var(--dark); }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, var(--burgundy) 0%, var(--violet) 100%);
+            color: white; padding: 36px; border-radius: 17px; margin: 40px 0; text-align: center;
+            box-shadow: 0 12px 38px rgba(128, 0, 33, 0.31);
+        }
+        .highlight-box h3 {
+            font-family: 'Playfair Display', serif; font-size: 1.95em; margin-bottom: 18px;
+        }
+        .highlight-box p { font-size: 1.18em; line-height: 1.85; opacity: 0.97; }
+
+        /* Footer */
+        .footer {
+            text-align: center; color: white; padding: 40px 20px; margin-top: 30px;
+            background: rgba(255,255,255,0.1); border-radius: 20px;
+        }
+        .footer p { font-size: 1.05em; opacity: 0.92; }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .quiz-options { grid-template-columns: 1fr; }
+            .block { padding: 33px 23px; }
+            .header h1 { font-size: 2.5em; }
+            .five-elements { flex-direction: column; }
+            .timeline { flex-direction: column; }
+            .timeline::before { display: none; }
+            .video-stats { grid-template-columns: repeat(2, 1fr); }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .header { padding: 42px 18px; }
+            .block-title { font-size: 1.85em; }
+            .video-wrapper { padding-bottom: 63%; }
+            .element-box { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <!-- HEADER -->
+        <div class="header">
+            <h1>🎮 Deep Reinforcement Learning</h1>
+            <p class="subtitle">Présentation Interactive Complète · DQN · Policy Gradient · Actor-Critic · PPO</p>
+            <div class="badges">
+                <span class="badge">🤖 Agent</span>
+                <span class="badge">🌍 Environment</span>
+                <span class="badge">📍 State</span>
+                <span class="badge">⚡ Action</span>
+                <span class="badge">🎁 Reward</span>
+            </div>
+        </div>
+
+        <!-- BLOCK 1: FIVE ELEMENTS -->
+        <div class="block" id="elements">
+            <h2 class="block-title">1. Les Cinq Éléments Fondamentaux</h2>
+            
+            <div class="five-elements">
+                <div class="element-box agent">
+                    <div class="element-icon">🤖</div>
+                    <div class="element-title">AGENT</div>
+                    <div class="element-desc">L'intelligence artificielle qui apprend à prendre des décisions et effectue des actions</div>
+                </div>
+                <div class="element-box environment">
+                    <div class="element-icon">🌍</div>
+                    <div class="element-title">ENVIRONNEMENT</div>
+                    <div class="element-desc">Monde ou simulateur dans lequel évolue l'agent et avec lequel il interagit</div>
+                </div>
+            </div>
+
+            <div class="connection-arrows">⟶ État sₜ ⟶ Action aₜ ⟶ Récompense rₜ ⟶</div>
+
+            <div class="five-elements">
+                <div class="element-box state">
+                    <div class="element-icon">📍</div>
+                    <div class="element-title">ÉTAT (State)</div>
+                    <div class="element-desc">Situation actuelle ou observation reçue par l'agent à un instant donné</div>
+                </div>
+                <div class="element-box action">
+                    <div class="element-icon">⚡</div>
+                    <div class="element-title">ACTION</div>
+                    <div class="element-desc">Décision ou mouvement spécifique pris par l'agent parmi un ensemble de possibilités</div>
+                </div>
+                <div class="element-box reward">
+                    <div class="element-icon">🎁</div>
+                    <div class="element-title">RÉCOMPENSE</div>
+                    <div class="element-desc">Signal scalaire de retour reçu après une action, indiquant si le résultat est positif ou négatif</div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <h3>🔄 La Boucle d'Interaction Continue</h3>
+                <p>L'agent observe l'état → Prend une action → Reçoit une récompense → Nouvel état<br>Ce cycle se répète jusqu'à l'apprentissage optimal de la politique π*</p>
+            </div>
+
+            <!-- QUIZ 1 -->
+            <div class="quiz-wrapper">
+                <button class="quiz-toggle">📝 Quiz Rapide</button>
+                <div class="quiz-panel">
+                    <div class="quiz-question">Quel élément fournit le feedback immédiat à l'agent après une action ?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-opt" data-correct="false">L'État (State)</div>
+                        <div class="quiz-opt" data-correct="true">La Récompense (Reward)</div>
+                        <div class="quiz-opt" data-correct="false">La Politique (π)</div>
+                        <div class="quiz-opt" data-correct="false">Le Facteur γ</div>
+                    </div>
+                    <div class="quiz-feedback">
+                        <span class="quiz-msg"></span>
+                        <div style="display:flex; align-items:center;">
+                            <span class="quiz-pts"></span>
+                            <button class="quiz-reset">🔄 Masquer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCK 2: MDP -->
+        <div class="block" id="mdp">
+            <h2 class="block-title">2. Processus de Décision de Markov (MDP)</h2>
+            
+            <div class="mdp-container">
+                <div class="mdp-formula">MDP = ⟨ S, A, P, R, γ ⟩</div>
+                
+                <div class="mdp-components">
+                    <div class="mdp-item">
+                        <h4>S - Espace d'États</h4>
+                        <p>L'ensemble de toutes les configurations possibles de l'environnement. Peut être discret ou continu.</p>
+                    </div>
+                    <div class="mdp-item">
+                        <h4>A - Espace d'Actions</h4>
+                        <p>L'ensemble des actions disponibles pour l'agent. Détermine la complexité du problème.</p>
+                    </div>
+                    <div class="mdp-item">
+                        <h4>P - Probabilités de Transition</h4>
+                        <p>P(s'|s,a) décrit la dynamique de l'environnement. Probabilité d'atteindre s' depuis s avec l'action a.</p>
+                    </div>
+                    <div class="mdp-item">
+                        <h4>R - Fonction de Récompense</h4>
+                        <p>R(s,a,s') donne le feedback immédiat. Guide l'apprentissage de l'agent vers l'objectif.</p>
+                    </div>
+                    <div class="mdp-item">
+                        <h4>γ - Facteur d'Actualisation</h4>
+                        <p>γ ∈ [0,1] détermine l'importance des récompenses futures. γ→0: myope, γ→1: visionnaire.</p>
+                    </div>
+                </div>
+
+                <div class="formula" style="margin-top: 26px; font-size: 1.23em;">
+                    Gₜ = rₜ + γ·rₜ₊₁ + γ²·rₜ₊₂ + γ³·rₜ₊₃ + ···
+                </div>
+            </div>
+
+            <!-- QUIZ 2 -->
+            <div class="quiz-wrapper">
+                <button class="quiz-toggle">📝 Quiz Rapide</button>
+                <div class="quiz-panel">
+                    <div class="quiz-question">Dans la formule MDP, que représente le paramètre γ ?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-opt" data-correct="false">Taux d'apprentissage</div>
+                        <div class="quiz-opt" data-correct="true">Facteur d'actualisation (Discount)</div>
+                        <div class="quiz-opt" data-correct="false">Nombre d'épisodes</div>
+                        <div class="quiz-opt" data-correct="false">Taille du replay buffer</div>
+                    </div>
+                    <div class="quiz-feedback">
+                        <span class="quiz-msg"></span>
+                        <div style="display:flex; align-items:center;">
+                            <span class="quiz-pts"></span>
+                            <button class="quiz-reset">🔄 Masquer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCK 3: WHY DEEP RL -->
+        <div class="block" id="why-deep">
+            <h2 class="block-title">3. Pourquoi le Deep RL ?</h2>
+            
+            <div class="grid-2">
+                <div class="card" style="border-left-color: #EF4444;">
+                    <h3 style="color:#DC2626;">❌ RL Classique</h3>
+                    <p>Q-table explose en haute dimension. Pas de généralisation. Échec sur pixels/images. Espaces discrets uniquement.</p>
+                </div>
+                <div class="card" style="border-left-color: #22C55E;">
+                    <h3 style="color:#16A34A;">✅ Deep RL</h3>
+                    <p>Réseau approxime Q/Policy. Généralise aux états non vus. Gère entrées brutes (CNNs). Espaces continus possibles.</p>
+                </div>
+            </div>
+            <div class="formula" style="margin-top: 30px; font-size: 1.38em; background: linear-gradient(135deg, var(--burgundy) 0%, var(--violet) 100%); color: white; border: none;">
+                Deep RL = RL + Réseaux de Neurones Profonds
+            </div>
+
+            <!-- QUIZ 3 -->
+            <div class="quiz-wrapper">
+                <button class="quiz-toggle">📝 Quiz Rapide</button>
+                <div class="quiz-panel">
+                    <div class="quiz-question">Quel problème majeur du RL classique est résolu par les réseaux de neurones ?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-opt" data-correct="false">Le calcul du gradient</div>
+                        <div class="quiz-opt" data-correct="true">La malédiction de la dimensionalité (Q-table trop grande)</div>
+                        <div class="quiz-opt" data-correct="false">Le choix de γ</div>
+                        <div class="quiz-opt" data-correct="false">L'initialisation des poids</div>
+                    </div>
+                    <div class="quiz-feedback">
+                        <span class="quiz-msg"></span>
+                        <div style="display:flex; align-items:center;">
+                            <span class="quiz-pts"></span>
+                            <button class="quiz-reset">🔄 Masquer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCK 4: DQN -->
+        <div class="block" id="dqn">
+            <h2 class="block-title">4. DQN (Deep Q-Network)</h2>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <h3>🎯 Value-Based</h3>
+                    <p>Approxime Q(s,a) via un réseau. Action = argmax Q(s,a). Idéal pour actions discrètes.</p>
+                </div>
+                <div class="card">
+                    <h3>🔄 Experience Replay</h3>
+                    <p>Stocke (s,a,r,s'). Échantillonnage aléatoire pour briser les corrélations temporelles.</p>
+                </div>
+                <div class="card">
+                    <h3>🎯 Target Network</h3>
+                    <p>Copie stable mise à jour tous les C steps. Stabilise les cibles d'apprentissage.</p>
+                </div>
+                <div class="card">
+                    <h3>🎲 ε-Greedy</h3>
+                    <p>Exploration aléatoire avec proba ε, exploitation greedy sinon. Équilibre exploration/exploitation.</p>
+                </div>
+            </div>
+            <div class="formula">Target = r + γ · max Q_target(s', a')</div>
+
+            <!-- QUIZ 4 -->
+            <div class="quiz-wrapper">
+                <button class="quiz-toggle">📝 Quiz Rapide</button>
+                <div class="quiz-panel">
+                    <div class="quiz-question">Quel mécanisme du DQN permet de briser la corrélation entre transitions successives ?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-opt" data-correct="true">Experience Replay Buffer</div>
+                        <div class="quiz-opt" data-correct="false">Target Network</div>
+                        <div class="quiz-opt" data-correct="false">Gradient Clipping</div>
+                        <div class="quiz-opt" data-correct="false">Dropout</div>
+                    </div>
+                    <div class="quiz-feedback">
+                        <span class="quiz-msg"></span>
+                        <div style="display:flex; align-items:center;">
+                            <span class="quiz-pts"></span>
+                            <button class="quiz-reset">🔄 Masquer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCK 5: POLICY GRADIENT -->
+        <div class="block" id="policy">
+            <h2 class="block-title">5. Policy Gradient (REINFORCE)</h2>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <h3>📈 Direct Policy Optimization</h3>
+                    <p>Apprend π_θ(a|s) directement. Sortie = distribution de probabilités. Gère actions continues.</p>
+                </div>
+                <div class="card">
+                    <h3>✅ Avantages</h3>
+                    <p>Gère espaces continus. Naturellement stochastique. Meilleure exploration. Convergence théorique.</p>
+                </div>
+                <div class="card">
+                    <h3>⚠️ Limites</h3>
+                    <p>Haute variance des gradients. Convergence lente. Sample-inefficient. Sensible au learning rate.</p>
+                </div>
+                <div class="card">
+                    <h3>🧮 Théorème</h3>
+                    <p>∇J(θ) = 𝔼[∇log π(a|s) · G_t]. Monte Carlo pur, nécessite épisodes complets.</p>
+                </div>
+            </div>
+
+            <!-- QUIZ 5 -->
+            <div class="quiz-wrapper">
+                <button class="quiz-toggle">📝 Quiz Rapide</button>
+                <div class="quiz-panel">
+                    <div class="quiz-question">Quel est le principal avantage des méthodes Policy Gradient par rapport à DQN ?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-opt" data-correct="false">Elles sont plus rapides à calculer</div>
+                        <div class="quiz-opt" data-correct="true">Elles gèrent naturellement les espaces d'actions continus</div>
+                        <div class="quiz-opt" data-correct="false">Elles n'ont pas besoin de récompenses</div>
+                        <div class="quiz-opt" data-correct="false">Elles utilisent un replay buffer plus petit</div>
+                    </div>
+                    <div class="quiz-feedback">
+                        <span class="quiz-msg"></span>
+                        <div style="display:flex; align-items:center;">
+                            <span class="quiz-pts"></span>
+                            <button class="quiz-reset">🔄 Masquer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCK 6: ACTOR-CRITIC & PPO -->
+        <div class="block" id="actor-critic">
+            <h2 class="block-title">6. Actor-Critic & PPO</h2>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <h3>🎭 ACTOR</h3>
+                    <p>Politique π_θ(a|s). Décide l'action. Mis à jour via Advantage. Sortie: softmax ou Gaussienne.</p>
+                </div>
+                <div class="card">
+                    <h3>⚖️ CRITIC</h3>
+                    <p>Valeur V(s) ou Q(s,a). Évalue la qualité. Réduit la variance. Guide l'Actor via Advantage.</p>
+                </div>
+                <div class="card">
+                    <h3>✂️ PPO Clipping</h3>
+                    <p>Limite les changements brutaux de politique. Zone de confiance [1-ε, 1+ε]. Empêche l'effondrement.</p>
+                </div>
+                <div class="card">
+                    <h3>🏆 Gold Standard</h3>
+                    <p>Stable, fiable, utilisé dans OpenAI Five, ChatGPT RLHF, Robotique. Standard de l'industrie.</p>
+                </div>
+            </div>
+            <div class="formula">A(s,a) = Q(s,a) − V(s)</div>
+
+            <!-- QUIZ 6 -->
+            <div class="quiz-wrapper">
+                <button class="quiz-toggle">📝 Quiz Rapide</button>
+                <div class="quiz-panel">
+                    <div class="quiz-question">Dans PPO, que se passe-t-il si le ratio de politique sort de la zone [1-ε, 1+ε] ?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-opt" data-correct="false">L'entraînement s'arrête immédiatement</div>
+                        <div class="quiz-opt" data-correct="true">Le gradient est clampé à zéro (pas de mise à jour destructrice)</div>
+                        <div class="quiz-opt" data-correct="false">Le Critic est réinitialisé</div>
+                        <div class="quiz-opt" data-correct="false">ε augmente automatiquement</div>
+                    </div>
+                    <div class="quiz-feedback">
+                        <span class="quiz-msg"></span>
+                        <div style="display:flex; align-items:center;">
+                            <span class="quiz-pts"></span>
+                            <button class="quiz-reset">🔄 Masquer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCK 7: VIDEO DEMO -->
+        <div class="block" id="video">
+            <h2 class="block-title">🎥 Démonstration Vidéo</h2>
+            
+            <div class="video-container">
+                <div class="video-wrapper">
+                    <iframe 
+                        src="https://www.youtube.com/embed/VnpRp7ZglfA?rel=0&modestbranding=1&autohide=1&showinfo=0" 
+                        title="Deep RL Demo - CartPole DQN"
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                
+                <div class="video-info">
+                    <div class="video-badge">🔴 Démo CartPole</div>
+                    <h3>CartPole avec DQN</h3>
+                    <p><strong>Environnement:</strong> Gymnasium CartPole-v1</p>
+                    <p><strong>Algorithme:</strong> Deep Q-Network avec Replay Buffer + Target Network</p>
+                    <p><strong>Observation:</strong> État vectoriel [position, vitesse, angle, vitesse angulaire]</p>
+                    <p><strong>Action:</strong> Déplacer le chariot ← ou →</p>
+                    <p><strong>Récompense:</strong> +1 par pas de survie, épisode termine si angle > ±12° ou position > ±2.4</p>
+                </div>
+
+                <div class="video-stats">
+                    <div class="stat-box">
+                        <span class="stat-value">~200</span>
+                        <span class="stat-label">Récompense cible</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value">150k</span>
+                        <span class="stat-label">Steps d'entraînement</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value">95%</span>
+                        <span class="stat-label">Taux de succès</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value">PPO</span>
+                        <span class="stat-label">Alternative stable</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCK 8: ALGORITHM COMPARISON -->
+        <div class="block" id="comparison">
+            <h2 class="block-title">8. Tableau Comparatif des Algorithmes</h2>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Algorithme</th>
+                        <th>Type</th>
+                        <th>Espace d'Actions</th>
+                        <th>Policy</th>
+                        <th>Avantages</th>
+                        <th>Limites</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>DQN</strong></td>
+                        <td>Value-Based</td>
+                        <td>Discret</td>
+                        <td>Off-policy</td>
+                        <td>Simple, stable avec tricks</td>
+                        <td>Pas d'actions continues</td>
+                    </tr>
+                    <tr>
+                        <td><strong>REINFORCE</strong></td>
+                        <td>Policy-Based</td>
+                        <td>Discret/Continu</td>
+                        <td>On-policy</td>
+                        <td>Simple, continu, stochastique</td>
+                        <td>Haute variance, lent</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PPO</strong></td>
+                        <td>Actor-Critic</td>
+                        <td>Discret/Continu</td>
+                        <td>On-policy</td>
+                        <td>Stable, fiable, gold standard</td>
+                        <td>Sample-inefficient</td>
+                    </tr>
+                    <tr>
+                        <td><strong>A2C</strong></td>
+                        <td>Actor-Critic</td>
+                        <td>Discret/Continu</td>
+                        <td>On-policy</td>
+                        <td>Synchrone, stable</td>
+                        <td>Moins efficace que PPO</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SAC</strong></td>
+                        <td>Actor-Critic</td>
+                        <td>Continu</td>
+                        <td>Off-policy</td>
+                        <td>Sample-efficient, entropy</td>
+                        <td>Complexe, sensible</td>
+                    </tr>
+                    <tr>
+                        <td><strong>TD3</strong></td>
+                        <td>Actor-Critic</td>
+                        <td>Continu</td>
+                        <td>Off-policy</td>
+                        <td>Stable, double critic</td>
+                        <td>Complexe à tuner</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- QUIZ 7 -->
+            <div class="quiz-wrapper">
+                <button class="quiz-toggle">📝 Quiz Final</button>
+                <div class="quiz-panel">
+                    <div class="quiz-question">Quel algorithme est particulièrement adapté aux actions continues ET utilise un replay buffer (off-policy) ?</div>
+                    <div class="quiz-options">
+                        <div class="quiz-opt" data-correct="false">PPO</div>
+                        <div class="quiz-opt" data-correct="false">DQN</div>
+                        <div class="quiz-opt" data-correct="true">SAC ou TD3</div>
+                        <div class="quiz-opt" data-correct="false">REINFORCE</div>
+                    </div>
+                    <div class="quiz-feedback">
+                        <span class="quiz-msg"></span>
+                        <div style="display:flex; align-items:center;">
+                            <span class="quiz-pts"></span>
+                            <button class="quiz-reset">🔄 Masquer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BLOCK 9: CONCLUSION -->
+        <div class="block" id="conclusion" style="background: linear-gradient(135deg, rgba(128, 0, 33, 0.11) 0%, rgba(124, 58, 237, 0.11) 100%);">
+            <h2 class="block-title">🎓 Synthèse et Points Clés</h2>
+            
+            <div class="grid-2">
+                <div class="card" style="border-left-color: var(--burgundy);">
+                    <h3>01 - DQN</h3>
+                    <p><strong>Value-Based + Deep Learning</strong><br>
+                    Replay buffer brise les corrélations. Target network stabilise l'entraînement. Uniquement pour actions discrètes.</p>
+                </div>
+                <div class="card" style="border-left-color: var(--violet);">
+                    <h3>02 - Policy Gradient</h3>
+                    <p><strong>Optimisation directe de π_θ</strong><br>
+                    Fonctionne avec actions continues. REINFORCE est non-biaisé mais haute variance (Monte Carlo).</p>
+                </div>
+                <div class="card" style="border-left-color: var(--blue);">
+                    <h3>03 - Actor-Critic</h3>
+                    <p><strong>Meilleur des deux mondes</strong><br>
+                    Actor décide, Critic évalue. Advantage A(s,a) = Q(s,a) − V(s) guide les mises à jour.</p>
+                </div>
+                <div class="card" style="border-left-color: var(--burgundy-light);">
+                    <h3>04 - PPO</h3>
+                    <p><strong>Stable, Fiable, Standard</strong><br>
+                    Clipped objective prévient les mises à jour destructives. Gold standard pour beaucoup d'applications RL.</p>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 40px;">
+                <h3>🚀 Prêt pour l'Implémentation ?</h3>
+                <p>
+                    Utilisez <strong>Stable-Baselines3</strong> pour implémenter PPO sur LunarLander-v2<br>
+                    ou CartPole pour votre projet pratique.
+                </p>
+                <div style="margin-top: 23px;">
+                    <span class="algo-badge" style="background: white; color: var(--burgundy); font-size: 0.98em; padding: 8px 20px;">Gymnasium</span>
+                    <span class="algo-badge" style="background: white; color: var(--violet); font-size: 0.98em; padding: 8px 20px;">Stable-Baselines3</span>
+                    <span class="algo-badge" style="background: white; color: var(--blue); font-size: 0.98em; padding: 8px 20px;">TensorBoard</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>🎓 Deep Reinforcement Learning — Présentation Interactive · 2026</p>
+            <p style="margin-top: 12px; font-size: 0.95em; opacity: 0.85;">Conçu pour l'apprentissage académique ·</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Quiz Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            // Toggle Quiz Panel
+            document.querySelectorAll('.quiz-toggle').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const panel = this.nextElementSibling;
+                    const isOpen = panel.classList.contains('open');
+                    
+                    // Close all other panels
+                    document.querySelectorAll('.quiz-panel.open').forEach(p => {
+                        if(p !== panel) p.classList.remove('open');
+                    });
+                    document.querySelectorAll('.quiz-toggle').forEach(b => {
+                        if(b !== this) b.textContent = '📝 Quiz Rapide';
+                    });
+
+                    panel.classList.toggle('open');
+                    this.textContent = isOpen ? '📝 Quiz Rapide' : '🙈 Masquer le Quiz';
+                });
+            });
+
+            // Handle Quiz Answers
+            document.querySelectorAll('.quiz-opt').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    const container = this.closest('.quiz-wrapper');
+                    const feedback = container.querySelector('.quiz-feedback');
+                    const msg = feedback.querySelector('.quiz-msg');
+                    const pts = feedback.querySelector('.quiz-pts');
+                    const options = container.querySelectorAll('.quiz-opt');
+                    
+                    // Lock all options
+                    options.forEach(o => o.classList.add('locked'));
+                    
+                    const isCorrect = this.dataset.correct === 'true';
+                    if (isCorrect) {
+                        this.classList.add('correct');
+                        msg.textContent = '✅ Excellente réponse !';
+                        msg.style.color = '#059669';
+                        pts.textContent = '+2 Points 🌟';
+                        pts.style.background = '#059669';
+                    } else {
+                        this.classList.add('incorrect');
+                        container.querySelector('[data-correct="true"]').classList.add('correct');
+                        msg.textContent = '❌ Pas tout à fait...';
+                        msg.style.color = '#DC2626';
+                        pts.textContent = '+0 Points';
+                        pts.style.background = '#DC2626';
+                    }
+                    
+                    feedback.style.display = 'flex';
+                });
+            });
+
+            // Reset & Hide Quiz
+            document.querySelectorAll('.quiz-reset').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const container = this.closest('.quiz-wrapper');
+                    const panel = container.querySelector('.quiz-panel');
+                    const toggle = container.querySelector('.quiz-toggle');
+                    const options = container.querySelectorAll('.quiz-opt');
+                    const feedback = container.querySelector('.quiz-feedback');
+                    
+                    options.forEach(o => o.classList.remove('correct', 'incorrect', 'locked'));
+                    feedback.style.display = 'none';
+                    panel.classList.remove('open');
+                    toggle.textContent = '📝 Quiz Rapide';
+                });
+            });
+
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if(target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+
+            // Keyboard navigation for quizzes (Enter to toggle)
+            document.querySelectorAll('.quiz-toggle').forEach(btn => {
+                btn.addEventListener('keydown', (e) => {
+                    if(e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        btn.click();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
